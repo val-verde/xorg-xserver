@@ -172,7 +172,7 @@ endif
 
 if build_systemd_logind
     # libsystemd-daemon was moved into libsystemd in version 209
-    libsystemd_daemon_dep = dependency('libsystemd', version: '>= 209',  required: false)
+    libsystemd_daemon_dep = dependency('libsystemd', version: '>= 209', required: false)
     if not libsystemd_daemon_dep.found()
         libsystemd_daemon_dep = dependency('libsystemd-daemon', required: false)
     endif
