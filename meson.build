@@ -102,12 +102,6 @@ xfont2_dep = dependency('xfont2', version: '>= 2.0')
 dbus_required = get_option('systemd_logind') == 'true'
 dbus_dep = dependency('dbus-1', version: '>= 1.0', required: dbus_required)
 
-# libsystemd-daemon was moved into libsystemd in version 209
-libsystemd_daemon_dep = dependency('libsystemd', version: '>= 209', required: false)
-if not libsystemd_daemon_dep.found()
-    libsystemd_daemon_dep = dependency('libsystemd-daemon', required: false)
-endif
-
 build_hashtable = false
 
 # Resolve default values of some options
@@ -174,6 +168,16 @@ if get_option('systemd_logind') == 'auto'
     build_systemd_logind = build_udev_kms and dbus_dep.found()
 else
     build_systemd_logind = get_option('systemd_logind') == 'true'
+endif
+
+if build_systemd_logind
+    # libsystemd-daemon was moved into libsystemd in version 209
+    libsystemd_daemon_dep = dependency('libsystemd', version: '>= 209',  required: false)
+    if not libsystemd_daemon_dep.found()
+        libsystemd_daemon_dep = dependency('libsystemd-daemon', required: false)
+    endif
+else
+    libsystemd_daemon_dep = dependency('not-found', required: false)
 endif
 
 with_dtrace = get_option('dtrace')
@@ -579,7 +583,6 @@ common_dep = [
     xcmiscproto_dep,
     bigreqsproto_dep,
     xtrans_dep,
-    libsystemd_daemon_dep,
 
     videoproto_dep,
     compositeproto_dep,
@@ -622,6 +625,10 @@ inc = include_directories(
     'render',
     'xfixes',
 )
+
+if build_systemd_logind
+    common_dep += libsystemd_daemon_dep
+endif
 
 build_xselinux = false
 if get_option('xselinux') != 'false'
